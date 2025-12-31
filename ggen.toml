@@ -1,0 +1,56 @@
+# ggen configuration: KGC Actor System Code Generation
+# Generates Rust + Erlang from protocol ontologies
+
+[generator]
+name = "kgc-codegen"
+version = "0.1.0"
+description = "Generates Rust actor system + AtomVM loops from RDF ontologies"
+
+[[sources]]
+# Input: RDF ontology describing actors, messages, handlers
+ontology = "ontology/worker.ttl"
+format = "turtle"
+
+[[outputs]]
+# Rust: Message enum + codec impls
+name = "worker_protocol.rs"
+template = "templates/rust/message_enum.tera"
+destination = "generated/worker_protocol.rs"
+language = "rust"
+
+[[outputs]]
+# Rust: NIF dispatcher
+name = "worker_dispatcher.rs"
+template = "templates/rust/nif_dispatcher.tera"
+destination = "generated/worker_dispatcher.rs"
+language = "rust"
+
+[[outputs]]
+# Erlang: Receive loop + mailbox handling
+name = "worker.erl"
+template = "templates/erlang/receive_loop.tera"
+destination = "generated/worker.erl"
+language = "erlang"
+
+[[outputs]]
+# Rust: Atom table (stable atom IDs)
+name = "atoms.rs"
+template = "templates/rust/atoms.tera"
+destination = "generated/atoms.rs"
+language = "rust"
+
+[namespacing]
+# How to map ontology IRIs to generated code namespaces
+ontology_base = "https://kgc.local/"
+rust_module = "kgc::generated"
+erlang_module = "kgc_gen"
+
+[features]
+# Deterministic: same input = same output
+deterministic = true
+
+# Enable zero-copy codecs where safe
+zero_copy = true
+
+# Code generation validates all roundtrips at compile time
+roundtrip_validation = true

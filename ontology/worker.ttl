@@ -1,0 +1,56 @@
+@prefix ex: <https://kgc.local/> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+# ====================================================================
+# KGC Actor System Ontology: Worker Actor
+# ====================================================================
+
+# Actor definition
+ex:Worker a ex:Actor ;
+    rdfs:label "Worker" ;
+    rdfs:comment "Minimal actor for ping-pong boundary testing" ;
+    ex:actorState [
+        ex:field "count" ;
+        ex:type "i64" ;
+        ex:initial "0"
+    ] ;
+    ex:handlers (ex:WorkerInc ex:WorkerGet) .
+
+# Message: Inc
+ex:WorkerInc a ex:Message ;
+    rdfs:label "inc" ;
+    rdfs:comment "Increment counter and return new value" ;
+    ex:handler ex:Worker ;
+    ex:param [
+        ex:name "by" ;
+        ex:erlangType "integer"
+    ] ;
+    ex:returnType [
+        ex:erlangType "integer" ;
+        ex:rustType "i64"
+    ] .
+
+# Message: Get
+ex:WorkerGet a ex:Message ;
+    rdfs:label "get" ;
+    rdfs:comment "Return current counter value" ;
+    ex:handler ex:Worker ;
+    ex:returnType [
+        ex:erlangType "integer" ;
+        ex:rustType "i64"
+    ] .
+
+# ====================================================================
+# Code Generation Directives
+# ====================================================================
+
+ex:GenerationConfig a ex:Config ;
+    ex:moduleName "worker" ;
+    ex:erlangModule "worker.erl" ;
+    ex:rustProtocol "generated/worker_protocol.rs" ;
+    ex:rustDispatcher "generated/worker_dispatcher.rs" ;
+    ex:nifModule "kgc_nif" ;
+    ex:nifFunction "dispatch/2" ;
+    ex:atomTable "global" ;
+    ex:targetVm "atomvm" .

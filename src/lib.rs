@@ -11,6 +11,12 @@ pub mod context;
 pub mod resource;
 pub mod registry;
 
+// AtomVM host runtime
+pub mod atomvm_support;
+
+// Generated code (from ggen)
+pub mod generated;
+
 // Testing infrastructure (only compiled for tests)
 #[cfg(test)]
 pub mod testing;
