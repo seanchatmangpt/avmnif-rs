@@ -17,8 +17,7 @@ pub mod atomvm_support;
 // Generated code (from ggen)
 pub mod generated;
 
-// Testing infrastructure (only compiled for tests)
-#[cfg(test)]
+// Testing infrastructure (available for unit and integration tests)
 pub mod testing;
 
 // Re-export commonly used types - match your existing exports
@@ -26,6 +25,5 @@ pub use context::Context;
 pub use term::{Term, NifResult};
 pub use crate::log::log_info;
 
-// Re-export testing utilities when testing
-#[cfg(test)]
+// Re-export testing utilities
 pub use testing::*;

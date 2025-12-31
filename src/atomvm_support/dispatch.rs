@@ -2,7 +2,9 @@
 //!
 //! Routes incoming messages to actor handlers and returns results
 
+extern crate alloc;
 use alloc::string::String;
+use alloc::vec::Vec;
 use crate::atomvm_support::errors::HostResult;
 
 /// NIF Dispatcher - manages message routing to handlers

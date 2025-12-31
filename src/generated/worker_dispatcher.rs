@@ -4,7 +4,8 @@
 //! Receives messages from AtomVM, dispatches to Rust handlers, returns results
 
 extern crate alloc;
-use alloc::string::String;
+use alloc::string::{String, ToString};
+use alloc::vec::Vec;
 use crate::term::TermValue;
 use crate::atom::AtomTableOps;
 use crate::generated::worker_protocol::*;
@@ -172,7 +173,7 @@ mod tests {
         // Build term: {inc, 5}
         let inc_atom = table.ensure_atom_str("inc").unwrap();
         let msg_term = TermValue::tuple(alloc::vec![
-            TermValue::atom(inc_atom),
+            TermValue::Atom(inc_atom),
             TermValue::int(5),
         ]);
 
@@ -189,7 +190,7 @@ mod tests {
 
         // Build term: atom `get`
         let get_atom = table.ensure_atom_str("get").unwrap();
-        let msg_term = TermValue::atom(get_atom);
+        let msg_term = TermValue::Atom(get_atom);
 
         let result = handle_term_message(&mut state, &msg_term, &table);
         assert!(result.is_ok());
@@ -204,7 +205,7 @@ mod tests {
         for i in 1..=5 {
             let inc_atom = table.ensure_atom_str("inc").unwrap();
             let msg_term = TermValue::tuple(alloc::vec![
-                TermValue::atom(inc_atom),
+                TermValue::Atom(inc_atom),
                 TermValue::int(i),
             ]);
 
@@ -226,7 +227,7 @@ mod tests {
         for i in 1..=10 {
             let inc_atom = table.ensure_atom_str("inc").unwrap();
             let msg_term = TermValue::tuple(alloc::vec![
-                TermValue::atom(inc_atom),
+                TermValue::Atom(inc_atom),
                 TermValue::int(i),
             ]);
             let _ = handle_term_message(&mut state1, &msg_term, &table);
@@ -237,7 +238,7 @@ mod tests {
         for i in 1..=10 {
             let inc_atom = table.ensure_atom_str("inc").unwrap();
             let msg_term = TermValue::tuple(alloc::vec![
-                TermValue::atom(inc_atom),
+                TermValue::Atom(inc_atom),
                 TermValue::int(i),
             ]);
             let _ = handle_term_message(&mut state2, &msg_term, &table);

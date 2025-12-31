@@ -4,8 +4,9 @@
 //! Maps Erlang messages ↔ Rust types with full codec support
 
 extern crate alloc;
-use alloc::string::String;
+use alloc::string::{String, ToString};
 use alloc::vec::Vec;
+use alloc::format;
 use crate::term::{TermValue};
 use crate::atom::AtomTableOps;
 use crate::generated::atoms::*;
@@ -43,7 +44,7 @@ pub fn decode_worker_msg<T: AtomTableOps>(
         if elems.len() == 2 {
             if let (Some(tag), Some(n)) = (elems[0].as_atom(), elems[1].as_int()) {
                 let inc_atom = table.ensure_atom_str(ATOM_INC)
-                    .map_err(|_| "atom table error".to_string())?;
+                    .map_err(|_| "atom table error: inc".to_string())?;
 
                 if tag == inc_atom {
                     return Ok(WorkerMsg::Inc(n as i64));
@@ -55,7 +56,7 @@ pub fn decode_worker_msg<T: AtomTableOps>(
     // Pattern: atom `get`
     if let Some(tag) = term.as_atom() {
         let get_atom = table.ensure_atom_str(ATOM_GET)
-            .map_err(|_| "atom table error".to_string())?;
+            .map_err(|_| "atom table error: get".to_string())?;
 
         if tag == get_atom {
             return Ok(WorkerMsg::Get);
@@ -75,18 +76,18 @@ pub fn encode_worker_reply<T: AtomTableOps>(
         WorkerReply::IncReply(value) => {
             // Reply: {ok, Value}
             let ok_atom = table.ensure_atom_str(ATOM_OK)
-                .map_err(|_| "atom table error".to_string())?;
+                .map_err(|_| "atom table error: ok".to_string())?;
             Ok(TermValue::tuple(alloc::vec![
-                TermValue::atom(ok_atom),
+                TermValue::Atom(ok_atom),
                 TermValue::int(*value as i32),
             ]))
         }
         WorkerReply::GetReply(value) => {
             // Reply: {ok, Value}
             let ok_atom = table.ensure_atom_str(ATOM_OK)
-                .map_err(|_| "atom table error".to_string())?;
+                .map_err(|_| "atom table error: ok".to_string())?;
             Ok(TermValue::tuple(alloc::vec![
-                TermValue::atom(ok_atom),
+                TermValue::Atom(ok_atom),
                 TermValue::int(*value as i32),
             ]))
         }
@@ -105,7 +106,7 @@ mod tests {
         // Build term: {inc, 42}
         let inc_atom = table.ensure_atom_str(ATOM_INC).unwrap();
         let term = TermValue::tuple(alloc::vec![
-            TermValue::atom(inc_atom),
+            TermValue::Atom(inc_atom),
             TermValue::int(42),
         ]);
 
@@ -123,7 +124,7 @@ mod tests {
 
         // Build term: atom `get`
         let get_atom = table.ensure_atom_str(ATOM_GET).unwrap();
-        let term = TermValue::atom(get_atom);
+        let term = TermValue::Atom(get_atom);
 
         let msg = decode_worker_msg(&term, &table);
         assert!(msg.is_ok());
@@ -162,7 +163,7 @@ mod tests {
         // Create message
         let inc_atom = table.ensure_atom_str(ATOM_INC).unwrap();
         let msg_term = TermValue::tuple(alloc::vec![
-            TermValue::atom(inc_atom),
+            TermValue::Atom(inc_atom),
             TermValue::int(5),
         ]);
 
@@ -177,7 +178,7 @@ mod tests {
 
         // Create message
         let get_atom = table.ensure_atom_str(ATOM_GET).unwrap();
-        let msg_term = TermValue::atom(get_atom);
+        let msg_term = TermValue::Atom(get_atom);
 
         // Decode
         let msg = decode_worker_msg(&msg_term, &table).unwrap();

@@ -1,6 +1,7 @@
 //! Host runtime: manages AtomVM instance and actor lifecycle
 
-use alloc::string::String;
+extern crate alloc;
+use alloc::string::{String, ToString};
 use alloc::vec::Vec;
 use crate::atomvm_support::errors::{HostError, HostResult};
 

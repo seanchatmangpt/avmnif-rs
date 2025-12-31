@@ -8,6 +8,7 @@
 
 extern crate alloc;
 use alloc::string::String;
+use alloc::format;
 use crate::atom::AtomIndex;
 
 /// Atom: "worker"
@@ -34,13 +35,20 @@ pub const ATOM_INTERNAL_ERROR: &str = "internal_error";
 /// Initialize all atoms in the table
 /// Call this once at startup to ensure stable IDs
 pub fn init_atoms<T: crate::atom::AtomTableOps>(table: &T) -> Result<(), String> {
-    let _ = table.ensure_atom_str(ATOM_WORKER)?;
-    let _ = table.ensure_atom_str(ATOM_INC)?;
-    let _ = table.ensure_atom_str(ATOM_GET)?;
-    let _ = table.ensure_atom_str(ATOM_OK)?;
-    let _ = table.ensure_atom_str(ATOM_ERROR)?;
-    let _ = table.ensure_atom_str(ATOM_BADARG)?;
-    let _ = table.ensure_atom_str(ATOM_INTERNAL_ERROR)?;
+    let _ = table.ensure_atom_str(ATOM_WORKER)
+        .map_err(|e| format!("Failed to ensure atom: {:?}", e))?;
+    let _ = table.ensure_atom_str(ATOM_INC)
+        .map_err(|e| format!("Failed to ensure atom: {:?}", e))?;
+    let _ = table.ensure_atom_str(ATOM_GET)
+        .map_err(|e| format!("Failed to ensure atom: {:?}", e))?;
+    let _ = table.ensure_atom_str(ATOM_OK)
+        .map_err(|e| format!("Failed to ensure atom: {:?}", e))?;
+    let _ = table.ensure_atom_str(ATOM_ERROR)
+        .map_err(|e| format!("Failed to ensure atom: {:?}", e))?;
+    let _ = table.ensure_atom_str(ATOM_BADARG)
+        .map_err(|e| format!("Failed to ensure atom: {:?}", e))?;
+    let _ = table.ensure_atom_str(ATOM_INTERNAL_ERROR)
+        .map_err(|e| format!("Failed to ensure atom: {:?}", e))?;
     Ok(())
 }
 

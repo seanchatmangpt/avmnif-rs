@@ -10,13 +10,11 @@
 
 #[cfg(test)]
 mod tests {
-    use avmnif::testing::*;
-    use avmnif::term::TermValue;
-
-    // Import the generated Worker system
-    use avmnif::generated::worker_dispatcher::*;
-    use avmnif::generated::worker_protocol::*;
-    use avmnif::generated::atoms;
+    use avmnif_rs::testing::*;
+    use avmnif_rs::term::TermValue;
+    use avmnif_rs::atom::AtomTableOps;
+    use avmnif_rs::generated::worker_dispatcher::*;
+    use avmnif_rs::generated::worker_protocol::*;
 
     /// Test 1: Single hop (Rust → AtomVM → Rust)
     /// Baseline: one message roundtrip works
@@ -30,8 +28,8 @@ mod tests {
 
         // Send Inc(5) - one boundary crossing
         let inc_atom = table.ensure_atom_str("inc").unwrap();
-        let msg_term = TermValue::tuple(alloc::vec![
-            TermValue::atom(inc_atom),
+        let msg_term = TermValue::tuple(vec![
+            TermValue::Atom(inc_atom),
             TermValue::int(5),
         ]);
 
@@ -51,16 +49,16 @@ mod tests {
 
         // Hop 1: Inc(3)
         let inc_atom = table.ensure_atom_str("inc").unwrap();
-        let msg1 = TermValue::tuple(alloc::vec![
-            TermValue::atom(inc_atom),
+        let msg1 = TermValue::tuple(vec![
+            TermValue::Atom(inc_atom),
             TermValue::int(3),
         ]);
         let _ = handle_term_message(&mut state, &msg1, &table);
         assert_eq!(state.count, 3);
 
         // Hop 2: Inc(7)
-        let msg2 = TermValue::tuple(alloc::vec![
-            TermValue::atom(inc_atom),
+        let msg2 = TermValue::tuple(vec![
+            TermValue::Atom(inc_atom),
             TermValue::int(7),
         ]);
         let _ = handle_term_message(&mut state, &msg2, &table);
@@ -77,8 +75,8 @@ mod tests {
         let inc_atom = table.ensure_atom_str("inc").unwrap();
 
         for i in 1..=5 {
-            let msg = TermValue::tuple(alloc::vec![
-                TermValue::atom(inc_atom),
+            let msg = TermValue::tuple(vec![
+                TermValue::Atom(inc_atom),
                 TermValue::int(i),
             ]);
 
@@ -101,9 +99,9 @@ mod tests {
 
         // Simulate 10 Rust → AtomVM → Rust boundary crossings
         for hop_num in 1..=10 {
-            let msg = TermValue::tuple(alloc::vec![
-                TermValue::atom(inc_atom),
-                TermValue::int(hop_num),
+            let msg = TermValue::tuple(vec![
+                TermValue::Atom(inc_atom),
+                TermValue::int(hop_num as i32),
             ]);
 
             let result = handle_term_message(&mut state, &msg, &table);
@@ -117,7 +115,7 @@ mod tests {
             );
 
             // State must be updated correctly
-            let expected = (1..=hop_num).sum::<i64>();
+            let expected = (1..=hop_num as i64).sum::<i64>();
             assert_eq!(state.count, expected, "State mismatch at hop {}", hop_num);
         }
 
@@ -133,15 +131,15 @@ mod tests {
         let table = MockAtomTable::new();
 
         // Sequence of messages
-        let messages = alloc::vec![1i64, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+        let messages = vec![1i32, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 
         // Run 1: Execute sequence
         let mut state1 = WorkerState::new();
         let inc_atom = table.ensure_atom_str("inc").unwrap();
 
         for &val in &messages {
-            let msg = TermValue::tuple(alloc::vec![
-                TermValue::atom(inc_atom),
+            let msg = TermValue::tuple(vec![
+                TermValue::Atom(inc_atom),
                 TermValue::int(val),
             ]);
             let _ = handle_term_message(&mut state1, &msg, &table);
@@ -150,8 +148,8 @@ mod tests {
         // Run 2: Same sequence again
         let mut state2 = WorkerState::new();
         for &val in &messages {
-            let msg = TermValue::tuple(alloc::vec![
-                TermValue::atom(inc_atom),
+            let msg = TermValue::tuple(vec![
+                TermValue::Atom(inc_atom),
                 TermValue::int(val),
             ]);
             let _ = handle_term_message(&mut state2, &msg, &table);
@@ -160,8 +158,8 @@ mod tests {
         // Run 3: And again
         let mut state3 = WorkerState::new();
         for &val in &messages {
-            let msg = TermValue::tuple(alloc::vec![
-                TermValue::atom(inc_atom),
+            let msg = TermValue::tuple(vec![
+                TermValue::Atom(inc_atom),
                 TermValue::int(val),
             ]);
             let _ = handle_term_message(&mut state3, &msg, &table);
@@ -202,15 +200,15 @@ mod tests {
 
         // Setup: Inc(10)
         let inc_atom = table.ensure_atom_str("inc").unwrap();
-        let inc_msg = TermValue::tuple(alloc::vec![
-            TermValue::atom(inc_atom),
+        let inc_msg = TermValue::tuple(vec![
+            TermValue::Atom(inc_atom),
             TermValue::int(10),
         ]);
         let _ = handle_term_message(&mut state, &inc_msg, &table);
 
         // Query: Get
         let get_atom = table.ensure_atom_str("get").unwrap();
-        let get_msg = TermValue::atom(get_atom);
+        let get_msg = TermValue::Atom(get_atom);
 
         let result = handle_term_message(&mut state, &get_msg, &table);
         assert!(result.is_ok());
@@ -240,24 +238,24 @@ mod tests {
         // Inc(5)
         let _ = handle_term_message(
             &mut state,
-            &TermValue::tuple(alloc::vec![TermValue::atom(inc_atom), TermValue::int(5)]),
+            &TermValue::tuple(vec![TermValue::Atom(inc_atom), TermValue::int(5)]),
             &table,
         );
 
         // Inc(3)
         let _ = handle_term_message(
             &mut state,
-            &TermValue::tuple(alloc::vec![TermValue::atom(inc_atom), TermValue::int(3)]),
+            &TermValue::tuple(vec![TermValue::Atom(inc_atom), TermValue::int(3)]),
             &table,
         );
 
         // Get
-        let _ = handle_term_message(&mut state, &TermValue::atom(get_atom), &table);
+        let _ = handle_term_message(&mut state, &TermValue::Atom(get_atom), &table);
 
         // Inc(2)
         let _ = handle_term_message(
             &mut state,
-            &TermValue::tuple(alloc::vec![TermValue::atom(inc_atom), TermValue::int(2)]),
+            &TermValue::tuple(vec![TermValue::Atom(inc_atom), TermValue::int(2)]),
             &table,
         );
 
@@ -276,8 +274,8 @@ mod tests {
 
         // 20 boundary crossings
         for hop in 1..=20 {
-            let msg = TermValue::tuple(alloc::vec![
-                TermValue::atom(inc_atom),
+            let msg = TermValue::tuple(vec![
+                TermValue::Atom(inc_atom),
                 TermValue::int(1),
             ]);
 
