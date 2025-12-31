@@ -6,6 +6,70 @@
 
 ---
 
+## 🎯 Skill-Driven Development System
+
+**This project uses a Skill-based governance system that overrides general guidelines.**
+
+### Prime Directive
+- **Add-only**: Never modify or delete existing files unless explicitly required by a skill.
+- **Preserve**: All existing `src/` modules remain unchanged.
+- **Extend**: New functionality is added through new directories and files.
+
+### How Skills Work
+
+Project Skills are located in `.claude/skills/<skill-name>/SKILL.md`. Each skill:
+- Has a specific scope (e.g., FFI safety, testing discipline, error reporting)
+- Contains binding constraints and output contracts
+- Is loaded automatically when matching task descriptions
+
+When working on a task, the applicable Skills **override** any conflicting guidance in this document.
+
+### Skill Priority Order
+
+If multiple Skills apply to a task, resolve conflicts in this order:
+
+1. **avmnif-rs-architecture** — Module boundaries, add-only rule, directory structure
+2. **rust-ffi-safety** — Unsafe code, FFI boundaries, pointer safety
+3. **term-codec-correctness** — Term conversions, roundtrip testing, error handling
+4. **error-reporting-patterns** — Typed errors, boundary mapping, error tests
+5. **tests-and-benchmarks** — Testing discipline, test completeness
+6. **document-with-context** — Documentation, inline comments, design intent
+7. **examples-for-every-feature** — Runnable examples, minimal demos
+8. **ci-readiness** — Determinism, reproducibility, clear commands
+9. **conventions-and-pr-standards** — Naming, code style, review narratives
+10. **subagent-coordination** — Task claiming, file ownership, merge safety
+
+**Golden Rule**: Safety, add-only, and testability always win in a conflict.
+
+### Where New Code Goes
+
+When adding code, use these directories (do not restructure existing `src/`):
+- `src/atomvm_support/` — Host-facing AtomVM integrations
+- `src/atomvm_support/ffi/` — FFI bindings and safe wrappers
+- `src/atomvm_support/loader/` — Module/bytecode loading
+- `src/atomvm_support/runtime/` — Runtime orchestration
+- `src/atomvm_support/testing/` — Integration harnesses
+- `examples/` — Runnable demonstrations
+- `docs/` — Feature documentation (new files only)
+- `.claude/skills/` — Additional governance skills
+
+### Using Skills in Practice
+
+When you encounter a task:
+
+1. **Identify applicable Skills** by matching task scope
+2. **Read the relevant SKILL.md files** in full
+3. **Apply their constraints** before writing code
+4. **Output contract**: Every task must satisfy its Skill's output contract
+5. **If conflicts arise**: Use the priority order above to decide
+
+**Example**: If adding FFI code:
+- Read `rust-ffi-safety/SKILL.md` first
+- Then read `tests-and-benchmarks/SKILL.md`
+- Apply both; if they conflict, safety wins
+
+---
+
 ## Table of Contents
 
 1. [Project Overview](#project-overview)
