@@ -1890,11 +1890,231 @@ When working with avmnif-rs:
 
 ---
 
+## AtomVM Support POC — Execution Doctrine
+
+This section governs development of `src/atomvm_support/` module during the POC phase.
+
+### Authority Hierarchy (for POC)
+
+When developing atomvm_support code, apply constraints in this order:
+
+1. **PROJECT_CHARTER.md** — Defines what "done" means
+2. **SYSTEM_BOUNDARIES.md** — Defines what is allowed to exist
+3. **ARCHITECTURAL_SHAPE.md** — Defines where code lives and how layers relate
+4. **INVARIANTS.md** — Defines truths that must never break
+5. **CLAUDE.md** (this file) — Defines how code is written
+
+Each higher document overrides lower ones. Never violate a higher document to follow a lower one.
+
+### Code Writing Rules for atomvm_support
+
+#### FFI Layer (src/atomvm_support/ffi/)
+
+**What it does:**
+- Raw C FFI bindings from AtomVM
+- Safe wrapper types around C structs
+- Error mapping from C error codes to Rust types
+
+**What it doesn't do:**
+- Business logic
+- Module loading (that's `loader/`)
+- Execution (that's `runtime/`)
+
+**Rules:**
+- All unsafe code lives here and ONLY here
+- Every `unsafe` block has a `// Safety:` comment
+- Every C call returns `Result<T, AtomVmError>`
+- No panics allowed (no `.unwrap()`, `.expect()`, `panic!()`)
+- Null pointer checks before every dereference
+
+**Example pattern:**
+```rust
+pub fn initialize(config: &Config) -> Result<AtomVmHost, AtomVmError> {
+    // Safety: AtomVM provides initialization function that returns
+    // opaque pointer. Null means initialization failed.
+    let ptr = unsafe { atomvm_initialize(...) };
+
+    if ptr.is_null() {
+        return Err(AtomVmError::FailedToInitialize);
+    }
+
+    Ok(AtomVmHost(ptr))
+}
+```
+
+#### Runtime Layer (src/atomvm_support/runtime/)
+
+**What it does:**
+- Orchestrates AtomVM execution
+- Manages instance lifecycle
+- Executes functions and collects results
+
+**What it doesn't do:**
+- Validating bytecode (that's `loader/`)
+- Raw C calls (that's `ffi/`)
+
+**Rules:**
+- No unsafe code (receives wrapped types from `ffi/`)
+- All error paths observable (no silent failures)
+- State transitions explicit and typed
+- Tests verify all code paths
+
+**Example pattern:**
+```rust
+pub fn execute_function(
+    host: &AtomVmHost,
+    module: &str,
+    function: &str,
+    args: &[TermValue],
+) -> Result<TermValue, AtomVmError> {
+    // Use wrapped types only
+    let result = host.call_function(module, function, args)?;
+    Ok(result)
+}
+```
+
+#### Loader Layer (src/atomvm_support/loader/)
+
+**What it does:**
+- Validates bytecode format
+- Extracts module metadata
+- Detects corruption/incompatibility
+
+**What it doesn't do:**
+- Executing (that's `runtime/`)
+- Raw C calls (that's `ffi/`)
+
+**Rules:**
+- No unsafe code
+- Validation happens before anything executes
+- Errors are specific (not just "invalid")
+- Metadata matches what executes
+
+**Example pattern:**
+```rust
+pub fn validate_bytecode(bytes: &[u8]) -> Result<(), BytecodeError> {
+    // Check magic number
+    if bytes.len() < 4 || &bytes[0..4] != b"FOR1" {
+        return Err(BytecodeError::InvalidFormat);
+    }
+
+    // Check version
+    let version = u32::from_be_bytes([bytes[4], bytes[5], bytes[6], bytes[7]]);
+    if version > SUPPORTED_VERSION {
+        return Err(BytecodeError::UnsupportedVersion(version));
+    }
+
+    Ok(())
+}
+```
+
+#### Testing Layer (src/atomvm_support/testing/)
+
+**What it does:**
+- Integration test harnesses that exercise all layers
+- Fixture builders for common test scenarios
+- Assertion helpers specific to AtomVM
+
+**What it doesn't do:**
+- Replace unit tests in each module
+- Test implementation details
+
+**Rules:**
+- Each test runs fresh (no shared state)
+- Tests are deterministic (same input = same output every time)
+- Error cases are tested (not just happy path)
+
+**Example pattern:**
+```rust
+#[test]
+fn test_boot_and_execute() {
+    // Arrange: Fresh instance
+    let host = AtomVmHost::initialize(&Config::default()).unwrap();
+
+    // Act: Load module and execute
+    let result = host.execute_function("math", "add", &[
+        TermValue::int(2),
+        TermValue::int(3),
+    ]);
+
+    // Assert: Verify result
+    assert!(result.is_ok());
+    assert_eq!(result.unwrap().as_int(), Some(5));
+}
+```
+
+### Development Workflow for atomvm_support
+
+**When you start a task:**
+
+1. Read PROJECT_CHARTER.md to understand scope
+2. Read SYSTEM_BOUNDARIES.md to know what's allowed
+3. Read ARCHITECTURAL_SHAPE.md to know where code goes
+4. Read INVARIANTS.md to know what must be true
+5. Write code following patterns above
+6. Test thoroughly
+7. Commit with clear message
+
+**Before you finish:**
+
+1. All tests pass: `cargo test --features atomvm_support`
+2. All invariants hold (check INVARIANTS.md)
+3. No existing files modified (only in src/atomvm_support/)
+4. All code is documented (doc comments on public items)
+5. Commit message is clear
+
+### Integration with Existing avmnif-rs Code
+
+**Use existing modules:**
+```rust
+use avmnif::{atom, term, context, resource};
+
+// In runtime/executor.rs
+let table = AtomTable::from_global();
+let term_value = TermValue::int(42);
+```
+
+**Respect existing patterns:**
+- Use `impl AtomTableOps` traits, not concrete types
+- Return `Result<T, YourError>`, never panics
+- Follow naming conventions from CLAUDE.md
+- Use existing testing utilities from `avmnif::testing`
+
+**Don't modify existing code:**
+- If you need to extend atom.rs behavior, wrap it
+- If you need new term helpers, define them in atomvm_support
+- If you need new resource patterns, implement them above
+
+### Commit Message Template
+
+```
+Brief one-line description of what changed
+
+- Longer explanation if needed
+- References to PROJECT_CHARTER, SYSTEM_BOUNDARIES, INVARIANTS if relevant
+```
+
+**Example:**
+```
+Implement src/atomvm_support/ffi/ module with safe FFI wrappers
+
+- Add C bindings for AtomVM initialization, module loading, and execution
+- Implement AtomVmError type that maps C error codes to Result types
+- All unsafe code documented with Safety comments
+- Tests verify initialization and error handling
+
+Satisfies PROJECT_CHARTER success criteria: (1) Boot, (4) Observe
+Respects INVARIANTS: G3 (no panics), F1 (null checks), F2 (error mapping)
+```
+
+---
+
 **End of CLAUDE.md**
 
-> **File Version**: 1.0
+> **File Version**: 1.1
 > **Generated**: 2025-12-31
-> **Based on**: 10-agent codebase analysis
-> **Project**: avmnif-rs v0.4.0
+> **Based on**: 10-agent codebase analysis + DFLSS-lean POC documentation
+> **Project**: avmnif-rs v0.4.0 + AtomVM POC
 
 This document should be updated whenever significant architectural changes or new patterns emerge in the codebase.
+The DFLSS-lean document stack (PROJECT_CHARTER.md, SYSTEM_BOUNDARIES.md, ARCHITECTURAL_SHAPE.md, INVARIANTS.md, CLAUDE.md) is the authority for POC phase development.
