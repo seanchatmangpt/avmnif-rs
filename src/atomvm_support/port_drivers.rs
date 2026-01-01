@@ -24,40 +24,61 @@ impl PlatformData for EchoPortData {
     }
 }
 
-pub fn handle_echo_message(data: &mut EchoPortData, _message: &Message) -> PortResult {
+pub fn handle_echo_message(data: &mut EchoPortData, message: &Message) -> PortResult {
     data.message_count += 1;
+    // In a real implementation, this would parse the message and echo it back
+    // to the sender, incrementing the counter each time.
     PortResult::Continue
 }
 
 #[derive(Debug, Clone)]
 pub struct CounterPortData {
     pub counter: i32,
+    pub last_op: CounterOp,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum CounterOp {
+    Idle,
+    Increment,
+    Decrement,
+    Reset,
 }
 
 impl CounterPortData {
     pub fn new() -> Self {
-        CounterPortData { counter: 0 }
+        CounterPortData {
+            counter: 0,
+            last_op: CounterOp::Idle,
+        }
     }
 
     pub fn increment(&mut self) {
         self.counter = self.counter.saturating_add(1);
+        self.last_op = CounterOp::Increment;
     }
 
     pub fn decrement(&mut self) {
         self.counter = self.counter.saturating_sub(1);
+        self.last_op = CounterOp::Decrement;
     }
 
     pub fn reset(&mut self) {
         self.counter = 0;
+        self.last_op = CounterOp::Reset;
     }
 }
 
 impl PlatformData for CounterPortData {
     fn cleanup(&mut self) {
+        self.reset();
     }
 }
 
-pub fn handle_counter_message(_data: &mut CounterPortData, _message: &Message) -> PortResult {
+pub fn handle_counter_message(data: &mut CounterPortData, _message: &Message) -> PortResult {
+    // In a real implementation, this would parse the message to determine
+    // which operation to perform (increment, decrement, or reset)
+    // and send the result back to the caller.
     PortResult::Continue
 }
 
