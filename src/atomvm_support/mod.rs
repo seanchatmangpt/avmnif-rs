@@ -10,6 +10,9 @@ pub mod port_state_machine;
 pub mod event_system;
 pub mod integration;
 pub mod performance;
+pub mod command_executor;
+pub mod health_monitor;
+pub mod operation_scheduler;
 
 pub use nif_bindings::*;
 pub use nif_implementations::*;
@@ -23,3 +26,6 @@ pub use port_state_machine::*;
 pub use event_system::*;
 pub use integration::*;
 pub use performance::*;
+pub use command_executor::*;
+pub use health_monitor::*;
+pub use operation_scheduler::*;
