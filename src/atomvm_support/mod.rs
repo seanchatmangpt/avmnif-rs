@@ -5,6 +5,10 @@ pub mod port_drivers;
 pub mod example_module;
 pub mod complete_collection;
 pub mod safe_api;
+pub mod message_dispatch;
+pub mod port_state_machine;
+pub mod event_system;
+pub mod integration;
 
 pub use nif_bindings::*;
 pub use nif_implementations::*;
@@ -13,3 +17,7 @@ pub use port_drivers::*;
 pub use example_module::*;
 pub use complete_collection::*;
 pub use safe_api::*;
+pub use message_dispatch::*;
+pub use port_state_machine::*;
+pub use event_system::*;
+pub use integration::*;
