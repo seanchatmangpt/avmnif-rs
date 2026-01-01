@@ -15,6 +15,10 @@ pub mod registry;
 #[cfg(test)]
 pub mod testing;
 
+// Generated code modules (ggen integration)
+#[cfg(test)]
+pub mod generated;
+
 // Re-export commonly used types - match your existing exports
 pub use context::Context;
 pub use term::{Term, NifResult};

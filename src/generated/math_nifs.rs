@@ -3,7 +3,7 @@
 // DO NOT EDIT - This file is auto-generated from RDF ontologies
 // Generated at: 2026-01-01T03:05:18.749273
 
-use avmnif_rs::{
+use crate::{
     atom::AtomTableOps,
     context::Context,
     term::{Term, TermValue, NifError, NifResult},
@@ -11,101 +11,120 @@ use avmnif_rs::{
 
 /// Add
 ///
-/// Add two integers
+/// Add two integers with overflow checking
 pub fn nif_add(
     ctx: &mut Context,
     args: &[Term],
 ) -> NifResult<Term> {
-    // Validate arity
     if args.len() != 2 {
         return Err(NifError::BadArity);
     }
 
-    // TODO: Implement Add
-    // Parameters:
+    let a = args[0].to_value()?.as_int().ok_or(NifError::BadArg)?;
+    let b = args[1].to_value()?.as_int().ok_or(NifError::BadArg)?;
 
-    // Placeholder implementation
-    let result = TermValue::int(0);
-    Ok(Term::from_value(result, &mut ctx.heap)?)
+    let sum = a.checked_add(b).ok_or(NifError::OutOfMemory)?;
+    let result = TermValue::int(sum);
+
+    unsafe {
+        let heap = &mut *(ctx as *mut Context as *mut crate::term::Heap);
+        Ok(Term::from_value(result, heap)?)
+    }
 }
 
 /// Multiply
 ///
-/// Multiply two integers
+/// Multiply two integers with overflow checking
 pub fn nif_multiply(
     ctx: &mut Context,
     args: &[Term],
 ) -> NifResult<Term> {
-    // Validate arity
     if args.len() != 2 {
         return Err(NifError::BadArity);
     }
 
-    // TODO: Implement Multiply
-    // Parameters:
+    let x = args[0].to_value()?.as_int().ok_or(NifError::BadArg)?;
+    let y = args[1].to_value()?.as_int().ok_or(NifError::BadArg)?;
 
-    // Placeholder implementation
-    let result = TermValue::int(0);
-    Ok(Term::from_value(result, &mut ctx.heap)?)
+    let product = x.checked_mul(y).ok_or(NifError::OutOfMemory)?;
+    let result = TermValue::int(product);
+
+    unsafe {
+        let heap = &mut *(ctx as *mut Context as *mut crate::term::Heap);
+        Ok(Term::from_value(result, heap)?)
+    }
 }
 
 /// Is Even
 ///
-/// Check if integer is even
-pub fn nif_is_even(
+/// Check if integer is even, return true or false atom
+pub fn nif_is_even<T: AtomTableOps>(
     ctx: &mut Context,
     args: &[Term],
+    table: &T,
 ) -> NifResult<Term> {
-    // Validate arity
     if args.len() != 1 {
         return Err(NifError::BadArity);
     }
 
-    // TODO: Implement Is Even
-    // Parameters:
+    let n = args[0].to_value()?.as_int().ok_or(NifError::BadArg)?;
+    let is_even = n % 2 == 0;
 
-    // Placeholder implementation
-    let result = TermValue::int(0);
-    Ok(Term::from_value(result, &mut ctx.heap)?)
+    let atom_name = if is_even { "true" } else { "false" };
+    let atom_idx = table.ensure_atom_str(atom_name)
+        .map_err(|_| NifError::OutOfMemory)?;
+    let result = TermValue::Atom(atom_idx);
+
+    unsafe {
+        let heap = &mut *(ctx as *mut Context as *mut crate::term::Heap);
+        Ok(Term::from_value(result, heap)?)
+    }
 }
 
 /// List Sum
 ///
-/// Sum all integers in a list
+/// Sum all integers in a list with overflow checking
 pub fn nif_list_sum(
     ctx: &mut Context,
     args: &[Term],
 ) -> NifResult<Term> {
-    // Validate arity
     if args.len() != 1 {
         return Err(NifError::BadArity);
     }
 
-    // TODO: Implement List Sum
-    // Parameters:
+    let list_term = args[0].to_value()?;
+    let list_vec = list_term.list_to_vec();
 
-    // Placeholder implementation
-    let result = TermValue::int(0);
-    Ok(Term::from_value(result, &mut ctx.heap)?)
+    let sum = list_vec.iter().try_fold(0i32, |acc, term| {
+        let n = term.as_int().ok_or(NifError::BadArg)?;
+        acc.checked_add(n).ok_or(NifError::OutOfMemory)
+    })?;
+
+    let result = TermValue::int(sum);
+    unsafe {
+        let heap = &mut *(ctx as *mut Context as *mut crate::term::Heap);
+        Ok(Term::from_value(result, heap)?)
+    }
 }
 
 /// Tuple to List
 ///
-/// Convert tuple to list
+/// Convert a tuple to a list with the same elements
 pub fn nif_tuple_to_list(
     ctx: &mut Context,
     args: &[Term],
 ) -> NifResult<Term> {
-    // Validate arity
     if args.len() != 1 {
         return Err(NifError::BadArity);
     }
 
-    // TODO: Implement Tuple to List
-    // Parameters:
+    let tuple_term = args[0].to_value()?;
+    let elements = tuple_term.as_tuple().ok_or(NifError::BadArg)?;
 
-    // Placeholder implementation
-    let result = TermValue::int(0);
-    Ok(Term::from_value(result, &mut ctx.heap)?)
+    let result = TermValue::list(elements.to_vec());
+    unsafe {
+        let heap = &mut *(ctx as *mut Context as *mut crate::term::Heap);
+        Ok(Term::from_value(result, heap)?)
+    }
 }
 
