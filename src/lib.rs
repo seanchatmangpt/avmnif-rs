@@ -11,9 +11,16 @@ pub mod context;
 pub mod resource;
 pub mod registry;
 
+// AtomVM integration layer
+pub mod atomvm_support;
+
 // Testing infrastructure (only compiled for tests)
 #[cfg(test)]
 pub mod testing;
+
+// Generated code modules (ggen integration)
+#[cfg(test)]
+pub mod generated;
 
 // Re-export commonly used types - match your existing exports
 pub use context::Context;

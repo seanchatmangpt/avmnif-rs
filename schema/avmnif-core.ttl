@@ -1,0 +1,313 @@
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix ex: <https://avmnif-rs.io/ns#> .
+
+# ─────────────────────────────────────────────────────────────────
+# NIF CORE ONTOLOGY FOR AVMNIF-RS
+#
+# This ontology defines the structure of Rust NIF functions,
+# port drivers, resources, and error types that can be code-generated
+# ─────────────────────────────────────────────────────────────────
+
+# ═══════════════════════════════════════════════════════════════════
+# FOUNDATIONAL CLASSES
+# ═══════════════════════════════════════════════════════════════════
+
+ex:NifFunction a rdfs:Class ;
+    rdfs:label "NIF Function" ;
+    rdfs:comment "A native implemented function callable from Erlang" ;
+    rdfs:subClassOf rdf:Resource .
+
+ex:PortDriver a rdfs:Class ;
+    rdfs:label "Port Driver" ;
+    rdfs:comment "A custom port driver for I/O communication" ;
+    rdfs:subClassOf rdf:Resource .
+
+ex:ResourceType a rdfs:Class ;
+    rdfs:label "Resource Type" ;
+    rdfs:comment "A managed resource type with lifecycle hooks" ;
+    rdfs:subClassOf rdf:Resource .
+
+ex:ErrorType a rdfs:Class ;
+    rdfs:label "Error Type" ;
+    rdfs:comment "An error type that can be returned from NIFs" ;
+    rdfs:subClassOf rdf:Resource .
+
+ex:TermType a rdfs:Class ;
+    rdfs:label "Term Type" ;
+    rdfs:comment "An AtomVM term type" ;
+    rdfs:subClassOf rdf:Resource .
+
+# ═══════════════════════════════════════════════════════════════════
+# NIF FUNCTION PROPERTIES
+# ═══════════════════════════════════════════════════════════════════
+
+ex:erlangName a rdf:Property ;
+    rdfs:domain ex:NifFunction ;
+    rdfs:range xsd:string ;
+    rdfs:label "Erlang Name" ;
+    rdfs:comment "The name exported to Erlang (lowercase, snake_case)" .
+
+ex:rustName a rdf:Property ;
+    rdfs:domain ex:NifFunction ;
+    rdfs:range xsd:string ;
+    rdfs:label "Rust Name" ;
+    rdfs:comment "The internal Rust function name" .
+
+ex:arity a rdf:Property ;
+    rdfs:domain ex:NifFunction ;
+    rdfs:range xsd:integer ;
+    rdfs:label "Arity" ;
+    rdfs:comment "Number of arguments (0-255)" .
+
+ex:description a rdf:Property ;
+    rdfs:domain [ a owl:Class ; owl:unionOf (ex:NifFunction ex:PortDriver ex:ResourceType) ] ;
+    rdfs:range xsd:string ;
+    rdfs:label "Description" ;
+    rdfs:comment "Human-readable documentation" .
+
+ex:parameter a rdf:Property ;
+    rdfs:domain ex:NifFunction ;
+    rdfs:range ex:Parameter ;
+    rdfs:label "Parameter" ;
+    rdfs:comment "A function parameter specification" .
+
+ex:returnType a rdf:Property ;
+    rdfs:domain [ a owl:Class ; owl:unionOf (ex:NifFunction ex:PortDriver) ] ;
+    rdfs:range ex:TermType ;
+    rdfs:label "Return Type" ;
+    rdfs:comment "The type of term returned" .
+
+ex:canFail a rdf:Property ;
+    rdfs:domain [ a owl:Class ; owl:unionOf (ex:NifFunction ex:PortDriver) ] ;
+    rdfs:range xsd:boolean ;
+    rdfs:label "Can Fail" ;
+    rdfs:comment "Whether the function can return an error" .
+
+# ═══════════════════════════════════════════════════════════════════
+# PARAMETER DEFINITION
+# ═══════════════════════════════════════════════════════════════════
+
+ex:Parameter a rdfs:Class ;
+    rdfs:label "Parameter" ;
+    rdfs:comment "A parameter to a NIF function" .
+
+ex:paramName a rdf:Property ;
+    rdfs:domain ex:Parameter ;
+    rdfs:range xsd:string ;
+    rdfs:label "Parameter Name" ;
+    rdfs:comment "The parameter name in Rust code" .
+
+ex:paramType a rdf:Property ;
+    rdfs:domain ex:Parameter ;
+    rdfs:range ex:TermType ;
+    rdfs:label "Parameter Type" ;
+    rdfs:comment "The expected AtomVM term type" .
+
+ex:paramIndex a rdf:Property ;
+    rdfs:domain ex:Parameter ;
+    rdfs:range xsd:integer ;
+    rdfs:label "Parameter Index" ;
+    rdfs:comment "Position in parameter list (0-based)" .
+
+ex:paramDoc a rdf:Property ;
+    rdfs:domain ex:Parameter ;
+    rdfs:range xsd:string ;
+    rdfs:label "Parameter Documentation" ;
+    rdfs:comment "Documentation for this parameter" .
+
+# ═══════════════════════════════════════════════════════════════════
+# TERM TYPE HIERARCHY
+# ═══════════════════════════════════════════════════════════════════
+
+ex:SmallInt a ex:TermType ;
+    rdfs:label "Small Integer" ;
+    rdfs:comment "32-bit signed integer (-2^31 to 2^31-1)" ;
+    ex:rustType "i32" ;
+    ex:erlangType "integer" .
+
+ex:Atom a ex:TermType ;
+    rdfs:label "Atom" ;
+    rdfs:comment "An atom identifier" ;
+    ex:rustType "AtomIndex" ;
+    ex:erlangType "atom" .
+
+ex:Nil a ex:TermType ;
+    rdfs:label "Nil" ;
+    rdfs:comment "Empty list []" ;
+    ex:rustType "()" ;
+    ex:erlangType "nil" .
+
+ex:Tuple a ex:TermType ;
+    rdfs:label "Tuple" ;
+    rdfs:comment "Ordered collection {a, b, c}" ;
+    ex:rustType "Vec<TermValue>" ;
+    ex:erlangType "tuple" .
+
+ex:List a ex:TermType ;
+    rdfs:label "List" ;
+    rdfs:comment "Linked list [H|T]" ;
+    ex:rustType "Vec<TermValue>" ;
+    ex:erlangType "list" .
+
+ex:Map a ex:TermType ;
+    rdfs:label "Map" ;
+    rdfs:comment "Key-value map #{key => value}" ;
+    ex:rustType "Vec<(TermValue, TermValue)>" ;
+    ex:erlangType "map" .
+
+ex:Binary a ex:TermType ;
+    rdfs:label "Binary" ;
+    rdfs:comment "Binary data" ;
+    ex:rustType "Vec<u8>" ;
+    ex:erlangType "binary" .
+
+ex:Float a ex:TermType ;
+    rdfs:label "Float" ;
+    rdfs:comment "64-bit floating point" ;
+    ex:rustType "f64" ;
+    ex:erlangType "float" .
+
+ex:Pid a ex:TermType ;
+    rdfs:label "Process ID" ;
+    rdfs:comment "Erlang process identifier" ;
+    ex:rustType "ProcessId" ;
+    ex:erlangType "pid" .
+
+ex:Port a ex:TermType ;
+    rdfs:label "Port" ;
+    rdfs:comment "Port identifier" ;
+    ex:rustType "PortId" ;
+    ex:erlangType "port" .
+
+ex:Resource a ex:TermType ;
+    rdfs:label "Resource" ;
+    rdfs:comment "NIF resource reference" ;
+    ex:rustType "ResourceRef" ;
+    ex:erlangType "resource" .
+
+# ═══════════════════════════════════════════════════════════════════
+# ERROR TYPES
+# ═══════════════════════════════════════════════════════════════════
+
+ex:BadArg a ex:ErrorType ;
+    rdfs:label "BadArg" ;
+    rdfs:comment "Invalid argument type or value" ;
+    ex:erlangAtom "badarg" ;
+    ex:httpCode 400 .
+
+ex:BadArity a ex:ErrorType ;
+    rdfs:label "BadArity" ;
+    rdfs:comment "Wrong number of arguments" ;
+    ex:erlangAtom "badarity" ;
+    ex:httpCode 400 .
+
+ex:OutOfMemory a ex:ErrorType ;
+    rdfs:label "OutOfMemory" ;
+    rdfs:comment "Memory allocation failed" ;
+    ex:erlangAtom "enomem" ;
+    ex:httpCode 507 .
+
+ex:SystemLimit a ex:ErrorType ;
+    rdfs:label "SystemLimit" ;
+    rdfs:comment "System resource limit exceeded" ;
+    ex:erlangAtom "system_limit" ;
+    ex:httpCode 507 .
+
+ex:InvalidTerm a ex:ErrorType ;
+    rdfs:label "InvalidTerm" ;
+    rdfs:comment "Term format is invalid" ;
+    ex:erlangAtom "badarg" ;
+    ex:httpCode 400 .
+
+# ═══════════════════════════════════════════════════════════════════
+# PORT DRIVER PROPERTIES
+# ═══════════════════════════════════════════════════════════════════
+
+ex:portName a rdf:Property ;
+    rdfs:domain ex:PortDriver ;
+    rdfs:range xsd:string ;
+    rdfs:label "Port Name" ;
+    rdfs:comment "The driver name visible to Erlang" .
+
+ex:initHandler a rdf:Property ;
+    rdfs:domain ex:PortDriver ;
+    rdfs:range xsd:string ;
+    rdfs:label "Init Handler" ;
+    rdfs:comment "Function called on port creation" .
+
+ex:destroyHandler a rdf:Property ;
+    rdfs:domain ex:PortDriver ;
+    rdfs:range xsd:string ;
+    rdfs:label "Destroy Handler" ;
+    rdfs:comment "Function called on port destruction" .
+
+ex:messageHandler a rdf:Property ;
+    rdfs:domain ex:PortDriver ;
+    rdfs:range xsd:string ;
+    rdfs:label "Message Handler" ;
+    rdfs:comment "Function called to handle port messages" .
+
+ex:platformData a rdf:Property ;
+    rdfs:domain ex:PortDriver ;
+    rdfs:range xsd:string ;
+    rdfs:label "Platform Data Type" ;
+    rdfs:comment "Rust struct name for port-local data" .
+
+# ═══════════════════════════════════════════════════════════════════
+# RESOURCE TYPE PROPERTIES
+# ═══════════════════════════════════════════════════════════════════
+
+ex:resourceTypeName a rdf:Property ;
+    rdfs:domain ex:ResourceType ;
+    rdfs:range xsd:string ;
+    rdfs:label "Resource Type Name" ;
+    rdfs:comment "The internal type name" .
+
+ex:dataType a rdf:Property ;
+    rdfs:domain ex:ResourceType ;
+    rdfs:range xsd:string ;
+    rdfs:label "Data Type" ;
+    rdfs:comment "The Rust struct/type held by this resource" .
+
+ex:cleanup a rdf:Property ;
+    rdfs:domain ex:ResourceType ;
+    rdfs:range xsd:boolean ;
+    rdfs:label "Has Cleanup" ;
+    rdfs:comment "Whether this resource needs cleanup on destruction" .
+
+# ═══════════════════════════════════════════════════════════════════
+# HELPER PROPERTIES FOR CODE GENERATION
+# ═══════════════════════════════════════════════════════════════════
+
+ex:rustType a rdf:Property ;
+    rdfs:range xsd:string ;
+    rdfs:label "Rust Type" ;
+    rdfs:comment "The corresponding Rust type name" .
+
+ex:erlangType a rdf:Property ;
+    rdfs:range xsd:string ;
+    rdfs:label "Erlang Type" ;
+    rdfs:comment "The Erlang type descriptor" .
+
+ex:erlangAtom a rdf:Property ;
+    rdfs:range xsd:string ;
+    rdfs:label "Erlang Atom" ;
+    rdfs:comment "The atom representation in Erlang" .
+
+ex:httpCode a rdf:Property ;
+    rdfs:range xsd:integer ;
+    rdfs:label "HTTP Code" ;
+    rdfs:comment "Corresponding HTTP status code for REST APIs" .
+
+ex:examples a rdf:Property ;
+    rdfs:range xsd:string ;
+    rdfs:label "Examples" ;
+    rdfs:comment "Code examples or usage patterns" .
+
+ex:category a rdf:Property ;
+    rdfs:range xsd:string ;
+    rdfs:label "Category" ;
+    rdfs:comment "Category for documentation organization" .
