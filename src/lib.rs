@@ -11,6 +11,9 @@ pub mod context;
 pub mod resource;
 pub mod registry;
 
+// AtomVM integration layer
+pub mod atomvm_support;
+
 // Testing infrastructure (only compiled for tests)
 #[cfg(test)]
 pub mod testing;
