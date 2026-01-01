@@ -13,6 +13,9 @@ pub mod performance;
 pub mod command_executor;
 pub mod health_monitor;
 pub mod operation_scheduler;
+pub mod failure_detection;
+pub mod conflict_detection;
+pub mod system_observer;
 
 pub use nif_bindings::*;
 pub use nif_implementations::*;
@@ -29,3 +32,6 @@ pub use performance::*;
 pub use command_executor::*;
 pub use health_monitor::*;
 pub use operation_scheduler::*;
+pub use failure_detection::*;
+pub use conflict_detection::*;
+pub use system_observer::*;
