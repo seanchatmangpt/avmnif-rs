@@ -1,0 +1,35 @@
+[project]
+name = "avmnif-rs"
+version = "0.4.0"
+description = "NIF code generator for AtomVM - transforms RDF ontologies into working Rust code"
+authors = ["avmnif-rs contributors"]
+license = "MIT"
+repository = "https://github.com/HeroesLament/avmnif-rs"
+
+[generation]
+ontology_dir = "schema/"
+templates_dir = "templates/"
+output_dir = "src/generated/"
+incremental = true
+overwrite = false
+
+[sync]
+enabled = true
+on_change = "manual"
+validate_after = true
+conflict_mode = "warn"
+
+[rdf]
+formats = ["turtle"]
+default_format = "turtle"
+base_uri = "https://avmnif-rs.io/ns#"
+strict_validation = false
+
+[templates]
+enable_caching = true
+auto_reload = true
+
+[output]
+formatting = "rustfmt"
+line_length = 100
+indent = 4

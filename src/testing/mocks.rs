@@ -817,9 +817,69 @@ impl ResourceManager for MockResourceManager {
     }
 }
 
-// ── Additional Mock Implementations ────────────────────────────────────────
+// ── Mock Context and Heap for Testing ─────────────────────────────────────
 
-// Future: Add MockContext, MockHeap, etc. here as needed
+/// Mock Heap for testing
+///
+/// Provides a simple mock implementation of the opaque Heap structure
+/// used for term allocation in NIFs.
+#[derive(Debug, Clone)]
+pub struct MockHeap {
+    terms_allocated: usize,
+}
+
+impl MockHeap {
+    /// Create a new mock heap
+    pub fn new() -> Self {
+        MockHeap {
+            terms_allocated: 0,
+        }
+    }
+}
+
+/// Mock Context for testing
+///
+/// Provides a complete mock implementation of the AtomVM Context
+/// with an embedded heap for term allocation.
+#[derive(Debug, Clone)]
+pub struct MockContext {
+    pub heap: MockHeap,
+}
+
+impl MockContext {
+    /// Create a new mock context with a fresh heap
+    pub fn new() -> Self {
+        MockContext {
+            heap: MockHeap::new(),
+        }
+    }
+
+    /// Get a mutable reference to the context as AtomVM Context type
+    ///
+    /// This is safe because MockHeap is binary-compatible with Heap (zero-sized opaque type)
+    pub fn as_context_mut(&mut self) -> &mut crate::context::Context {
+        unsafe { &mut *(self as *mut _ as *mut crate::context::Context) }
+    }
+
+    /// Get the heap as mutable Heap reference
+    pub fn heap_mut(&mut self) -> &mut crate::term::Heap {
+        unsafe { &mut *((&mut self.heap) as *mut MockHeap as *mut crate::term::Heap) }
+    }
+}
+
+// Implement AsRef so MockHeap can be used where &Heap is expected
+impl AsRef<crate::term::Heap> for MockHeap {
+    fn as_ref(&self) -> &crate::term::Heap {
+        unsafe { &*(self as *const _ as *const crate::term::Heap) }
+    }
+}
+
+// Implement AsMut so &mut MockHeap can be used where &mut Heap is expected
+impl AsMut<crate::term::Heap> for MockHeap {
+    fn as_mut(&mut self) -> &mut crate::term::Heap {
+        unsafe { &mut *(self as *mut _ as *mut crate::term::Heap) }
+    }
+}
 
 #[cfg(test)]
 mod tests {

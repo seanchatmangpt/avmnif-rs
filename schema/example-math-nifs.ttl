@@ -1,0 +1,141 @@
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix ex: <https://avmnif-rs.io/ns#> .
+
+# ─────────────────────────────────────────────────────────────────
+# EXAMPLE: MATH NIFS
+#
+# A working example of an RDF ontology describing a module
+# of mathematical NIF functions that will be code-generated
+# ─────────────────────────────────────────────────────────────────
+
+# ═══════════════════════════════════════════════════════════════════
+# FUNCTION: add/2
+# ═══════════════════════════════════════════════════════════════════
+
+ex:add a ex:NifFunction ;
+    rdfs:label "Add" ;
+    rdfs:comment "Add two integers" ;
+    ex:erlangName "add" ;
+    ex:rustName "nif_add" ;
+    ex:arity 2 ;
+    ex:canFail true ;
+    ex:returnType ex:SmallInt ;
+    ex:category "Arithmetic" ;
+    ex:description "Adds two signed 32-bit integers and returns the result. Returns error if result overflows." ;
+    ex:parameter [
+        rdf:value "arg0" ;
+        ex:paramIndex 0 ;
+        ex:paramName "a" ;
+        ex:paramType ex:SmallInt ;
+        ex:paramDoc "First integer to add"
+    ] ;
+    ex:parameter [
+        rdf:value "arg1" ;
+        ex:paramIndex 1 ;
+        ex:paramName "b" ;
+        ex:paramType ex:SmallInt ;
+        ex:paramDoc "Second integer to add"
+    ] ;
+    ex:examples "math_nifs:add(5, 3)  # => 8" .
+
+# ═══════════════════════════════════════════════════════════════════
+# FUNCTION: multiply/2
+# ═══════════════════════════════════════════════════════════════════
+
+ex:multiply a ex:NifFunction ;
+    rdfs:label "Multiply" ;
+    rdfs:comment "Multiply two integers" ;
+    ex:erlangName "multiply" ;
+    ex:rustName "nif_multiply" ;
+    ex:arity 2 ;
+    ex:canFail true ;
+    ex:returnType ex:SmallInt ;
+    ex:category "Arithmetic" ;
+    ex:description "Multiplies two signed 32-bit integers. Returns error if result overflows." ;
+    ex:parameter [
+        rdf:value "arg0" ;
+        ex:paramIndex 0 ;
+        ex:paramName "x" ;
+        ex:paramType ex:SmallInt ;
+        ex:paramDoc "First factor"
+    ] ;
+    ex:parameter [
+        rdf:value "arg1" ;
+        ex:paramIndex 1 ;
+        ex:paramName "y" ;
+        ex:paramType ex:SmallInt ;
+        ex:paramDoc "Second factor"
+    ] ;
+    ex:examples "math_nifs:multiply(7, 6)  # => 42" .
+
+# ═══════════════════════════════════════════════════════════════════
+# FUNCTION: is_even/1
+# ═══════════════════════════════════════════════════════════════════
+
+ex:isEven a ex:NifFunction ;
+    rdfs:label "Is Even" ;
+    rdfs:comment "Check if integer is even" ;
+    ex:erlangName "is_even" ;
+    ex:rustName "nif_is_even" ;
+    ex:arity 1 ;
+    ex:canFail false ;
+    ex:returnType ex:Atom ;
+    ex:category "Testing" ;
+    ex:description "Checks whether an integer is even, returning 'true' or 'false' atom." ;
+    ex:parameter [
+        rdf:value "arg0" ;
+        ex:paramIndex 0 ;
+        ex:paramName "n" ;
+        ex:paramType ex:SmallInt ;
+        ex:paramDoc "Integer to check"
+    ] ;
+    ex:examples "math_nifs:is_even(4)  # => true" ;
+    ex:examples "math_nifs:is_even(3)  # => false" .
+
+# ═══════════════════════════════════════════════════════════════════
+# FUNCTION: list_sum/1
+# ═══════════════════════════════════════════════════════════════════
+
+ex:listSum a ex:NifFunction ;
+    rdfs:label "List Sum" ;
+    rdfs:comment "Sum all integers in a list" ;
+    ex:erlangName "list_sum" ;
+    ex:rustName "nif_list_sum" ;
+    ex:arity 1 ;
+    ex:canFail true ;
+    ex:returnType ex:SmallInt ;
+    ex:category "Aggregation" ;
+    ex:description "Sums all integer elements in a list. Fails if list contains non-integers or result overflows." ;
+    ex:parameter [
+        rdf:value "arg0" ;
+        ex:paramIndex 0 ;
+        ex:paramName "numbers" ;
+        ex:paramType ex:List ;
+        ex:paramDoc "List of integers to sum"
+    ] ;
+    ex:examples "math_nifs:list_sum([1, 2, 3, 4, 5])  # => 15" .
+
+# ═══════════════════════════════════════════════════════════════════
+# FUNCTION: tuple_to_list/1
+# ═══════════════════════════════════════════════════════════════════
+
+ex:tupleToList a ex:NifFunction ;
+    rdfs:label "Tuple to List" ;
+    rdfs:comment "Convert tuple to list" ;
+    ex:erlangName "tuple_to_list" ;
+    ex:rustName "nif_tuple_to_list" ;
+    ex:arity 1 ;
+    ex:canFail false ;
+    ex:returnType ex:List ;
+    ex:category "Conversion" ;
+    ex:description "Converts a tuple into a list with the same elements in the same order." ;
+    ex:parameter [
+        rdf:value "arg0" ;
+        ex:paramIndex 0 ;
+        ex:paramName "tuple" ;
+        ex:paramType ex:Tuple ;
+        ex:paramDoc "Tuple to convert"
+    ] ;
+    ex:examples "math_nifs:tuple_to_list({1, 2, 3})  # => [1, 2, 3]" .
