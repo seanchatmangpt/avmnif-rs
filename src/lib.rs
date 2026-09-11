@@ -1,5 +1,7 @@
 #![no_std]
 extern crate alloc;
+#[cfg(feature = "std")]
+extern crate std;
 
 // Core modules - keep your existing structure
 pub mod atom;
