@@ -35,6 +35,11 @@ pub mod intent;
 pub mod execution;
 pub mod control_plane;
 
+// Environment-owned native host actuation. Kept feature-gated so embedded and
+// no_std consumers never acquire filesystem/process authority by linking core.
+#[cfg(feature = "native-host")]
+pub mod native_runtime;
+
 pub use nif_bindings::*;
 pub use nif_implementations::*;
 pub use resource_management::*;
