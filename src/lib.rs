@@ -10,6 +10,7 @@ pub mod tagged;
 pub mod context;
 pub mod resource;
 pub mod registry;
+pub mod economic;
 
 // AtomVM integration layer
 pub mod atomvm_support;
@@ -26,6 +27,7 @@ pub mod generated;
 pub use context::Context;
 pub use term::{Term, NifResult};
 pub use crate::log::log_info;
+pub use economic::{EconomicCategory, EconomicCodecError, EconomicFrame, EconomicOpcode};
 
 // Re-export testing utilities when testing
 #[cfg(test)]
