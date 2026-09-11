@@ -27,6 +27,14 @@ pub mod hot_code;
 pub mod sla;
 pub mod message_validation;
 
+// v26.9.11: split topology, intent identity, execution planning, evidence, and
+// composed admission into orthogonal reusable surfaces. None owns actuation.
+pub mod evidence;
+pub mod swarm;
+pub mod intent;
+pub mod execution;
+pub mod control_plane;
+
 pub use nif_bindings::*;
 pub use nif_implementations::*;
 pub use resource_management::*;
