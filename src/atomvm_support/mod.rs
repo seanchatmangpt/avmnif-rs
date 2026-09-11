@@ -34,6 +34,7 @@ pub mod swarm;
 pub mod intent;
 pub mod execution;
 pub mod control_plane;
+pub mod production;
 
 // Environment-owned native host actuation. Kept feature-gated so embedded and
 // no_std consumers never acquire filesystem/process authority by linking core.
