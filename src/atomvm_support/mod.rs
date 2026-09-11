@@ -17,6 +17,16 @@ pub mod failure_detection;
 pub mod conflict_detection;
 pub mod system_observer;
 
+// Portable control-plane semantics ported from unrdf/packages/atomvm.
+// Keep these namespaced rather than glob-reexported so existing avmnif support
+// types remain source-compatible and domain-specific semantics do not collide.
+pub mod runtime_lifecycle;
+pub mod circuit_breaker;
+pub mod supervisor;
+pub mod hot_code;
+pub mod sla;
+pub mod message_validation;
+
 pub use nif_bindings::*;
 pub use nif_implementations::*;
 pub use resource_management::*;
