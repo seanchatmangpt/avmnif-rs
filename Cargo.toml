@@ -4,16 +4,17 @@ version = "0.4.0"
 edition = "2021"
 description     = "Safe NIF toolkit for AtomVM written in Rust"
 license         = "MIT"
-repository      = "https://github.com/HeroesLament/avmnif-rs"
+repository      = "https://github.com/seanchatmangpt/avmnif-rs"
 documentation   = "https://docs.rs/avmnif-rs"
 readme          = "README.md"
 
 [dependencies]
 paste = "1.0.15"
 
-
 [features]
 default = []
+std = []
+native-host = ["std"]
 
 [package.metadata.docs.rs]
 all-features = true
